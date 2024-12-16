@@ -1,0 +1,90 @@
+---
+name: Generate and deploy MkDocs to GitHub Pages
+
+on:
+  push:
+  workflow_dispatch:
+  
+env:
+  PYTHON_VER: '3.12'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/configure-pages@v3
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VER }}
+        
+    - name: Install uv
+      run: |
+        pip install --upgrade pip
+        pip install uv
+
+    - name: Cache uv virtual environment
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: ${{ runner.os }}-py${{ env.PYTHON_VER }}-uv-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: ${{ runner.os }}-venv-
+
+    - name: Install only doc deps
+      run: uv install --only docs --no-root
+
+    - name: Get repo info
+      id: repo_info
+      run: |
+        REPO_INFO=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }})
+        REPO_NAME=$(echo $REPO_INFO | jq -r .name)
+        REPO_DESCRIPTION=$(echo $REPO_INFO | jq -r .description)
+        echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+        echo "repo_description=$REPO_DESCRIPTION" >> $GITHUB_OUTPUT
+
+    - name: Copy repo files
+      run: |
+        mkdir -p docs
+        cp README.md docs/index.md
+        # {PRD,FRD,DRD}.md
+        cp doc/PRD.md docs/
+        # {CHANGELOG,LICENSES}.md
+        cp LICENSE.md docs/
+        cp pyproject.toml docs/pyproject.md
+        
+    - name: Create docstrings file
+      run: |
+        cat << EOF > docs/docstrings.md
+        # Code Documentation
+        
+        ::: app
+        EOF
+
+    - name: Build documentation
+      run: poetry run mkdocs build
+
+#    - name: Push to gh-pages
+#      run: mkdocs gh-deploy --force
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./site
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v3
+...

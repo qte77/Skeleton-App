@@ -1,0 +1,79 @@
+---
+# https://github.com/callowayproject/bump-my-version?tab=readme-ov-file#github-actions
+name: Bump Version with bump-my-version
+
+on:
+#  pull_request:
+#    branches:
+#      - main
+  push:
+#    branches:
+#      - main
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - 'major'
+        - 'minor'
+        - 'patch'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine bump type
+        id: determine_bump_type
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "bump_type=${{ github.event.inputs.bump_type }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version
+        id: bump
+        uses: callowayproject/bump-my-version@0.28.0
+        env:
+          BUMPVERSION_TAG: "true"
+        with:
+          args: ${{ steps.determine_bump_type.outputs.bump_type }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check
+        if: steps.bump.outputs.bumped == 'true'
+        run: |
+          previous=${{ steps.bump.outputs.previous-version }}
+          current=${{ steps.bump.outputs.current-version }}
+          echo "Version was bumped from ${previous} to ${current}!"
+
+#      - name: Push changes
+#        if: steps.bump.outputs.bumped == 'true'
+#        run: |
+#          git config user.name bump-version-gha
+#          git config user.email github-actions@github.com
+#          git push origin HEAD:${{ github.ref }}
+#          git push --tags
+
+#      - name: Create Release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: v${{ steps.get_version.outputs.new_version }}
+#          release_name: Release ${{ steps.get_version.outputs.new_version }}
+#          draft: false
+#          prerelease: false
+...
