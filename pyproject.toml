@@ -3,7 +3,7 @@ name = "<project name>"
 version = "0.0.0"
 description = "<project desc>"
 dependencies = [
-    "pydantic==1.8.2",
+    "pydantic==2.10.3",
     "loguru==0.5.3"
 ]
 
