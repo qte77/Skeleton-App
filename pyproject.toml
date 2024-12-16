@@ -4,7 +4,7 @@ version = "0.0.0"
 description = "<project desc>"
 dependencies = [
     "pydantic==1.8.2",
-    "loguru==0.5.3"
+    "loguru==0.7.3"
 ]
 
 [tool.uv]
