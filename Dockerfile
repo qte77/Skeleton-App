@@ -1,36 +1,45 @@
-ARG PYTHON_VERSION=3.12
+ARG APP_ROOT="/src"
+ARG PYTHON_VERSION="3.12"
+ARG USER="appuser"
 
-# Stage 1: Build environment
-FROM python:${PYTHON_VERSION}-slim AS builder
 
-# Set working directory
-WORKDIR /app
+# Stage 1: Builder Image
+FROM python:${PYTHON_VERSION}-slim AS AS builder
+LABEL author="qte77"
+LABEL builder=true
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+COPY pyproject.toml uv.lock ./
+RUN set -xe \
+    && pip install --no-cache-dir uv \
+    && uv sync --frozen
 
-# Copy the project files
-COPY . .
 
-# Install build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies using uv
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir uv && \
-    uv install .
-
-# Stage 2: Runtime environment
+# Stage 2: Runtime Image
 FROM python:${PYTHON_VERSION}-slim AS runtime
+LABEL author="qte77"
+LABEL runtime=true
 
-ARG PYTHON_VERSION
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-WORKDIR /app
+ARG APP_ROOT
+ARG USER
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=${APP_ROOT} \
+    PATH="${APP_ROOT}:${PATH}"
+#    WANDB_KEY=${WANDB_KEY} \
+#    WANDB_DISABLE_CODE=true
 
-# Copy only necessary files from the builder stage
-COPY --from=builder /usr/local/lib/python${PYTHON_VERSION}/site-packages \
-    /usr/local/lib/python${PYTHON_VERSION}/site-packages
-COPY --from=builder /app /app
+RUN set -xe \
+    && useradd --create-home ${USER} \
+    && pip install --no-cache-dir uv
+    
+USER ${USER}
+WORKDIR ${APP_ROOT}
+COPY --from=builder /.venv .venv
+COPY --chown=${USER}:${USER} ${APP_ROOT} .
 
-EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD [ \
+    "uv", "run", \
+    "--locked", "--no-sync", \
+    "python", "-m", "." \
+]
