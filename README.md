@@ -38,8 +38,8 @@ Run tests using: `pytest tests/`
 
 ## Documentation
 
-- **Project DSL**: See `[docs/project_dsl.txt](docs/project_dsl.txt)` for a high-level overview of the project structure and functionality.
-- **PRD**: See `[docs/PRD.md](docs/PRD.md)` for detailed product requirements.
+- **Project DSL**: See [docs/project_dsl.txt](docs/project_dsl.txt) for a high-level overview of the project structure and functionality.
+- **PRD**: See [docs/PRD.md](docs/PRD.md) for detailed product requirements.
 
 ### Architecture
 
