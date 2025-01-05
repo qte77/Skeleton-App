@@ -1,15 +1,15 @@
 [project]
 version = "0.0.0"
-name = "segformer-quantization-pipeline"
-description = "An end-to-end quantization evaluation pipeline for SegFormer models on semantic segmentation tasks"
+name = "<PROJECT_NAME>"
+description = "<PROJECT_DESCRIPTION"
 authors = [
     {name = "qte77", email = "qte@77.gh"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pydantic==1.8.2",
-    "loguru==0.5.3"
+    "loguru==0.7.3",
+    "pydantic==2.10.4",
 ]
 
 # https://docs.astral.sh/uv/concepts/projects/dependencies/#optional-dependencies
@@ -36,7 +36,7 @@ docs = [
     "mkdocs-literate-nav>=0.6.1",
     "mkdocs-material>=9.5.44",
     "mkdocs-section-index>=0.3.8",
-    "mkdocstrings[python]>=0.27.0"
+    "mkdocstrings[python]>=0.27.0",
 ]
 # [tool.uv.optional-dependencies]
 # streamlit = [
@@ -56,12 +56,11 @@ src = ["scripts", "src", "tests"]
 docstring-code-format = true
 
 [tool.ruff.lint]
-ignore = [
-    "E203",  # Whitespace before ':'
-#    "MD024", # no-duplicate-heading
-#    "W503",  # unknown to ruff? Line break before binary operator
-]
+ignore = ["E203"]  # Whitespace before ':'
 unfixable = ["B"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 [tool.bumpversion]
 current_version = "0.0.0"
