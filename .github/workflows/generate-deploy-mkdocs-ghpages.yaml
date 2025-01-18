@@ -93,7 +93,7 @@ jobs:
         # copy images, mkdocs does not by default
         # mkdocs also overwrites pre-made directories
         dir="${{ env.SITE_DIR }}/${{ env.IMG_DIR }}"
-        if [ -d "${{ env.IMG_DIR }}" ]; then
+        if [ -d "${dir}" ]; then
           mkdir -p "${dir}"
           cp "${{ env.IMG_DIR }}/*" "${dir}"
         fi
