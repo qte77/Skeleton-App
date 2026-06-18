@@ -13,7 +13,7 @@
 
 ## Status
 
-(DRAFT) (WIP) ----> Not fully implemented yet
+DEPRECATED — superseded by [ralph-loop-cc-tdd-wt-vibe-kanban-template](https://github.com/qte77/ralph-loop-cc-tdd-wt-vibe-kanban-template), which is the canonical new-repo bootstrap for the qte77 estate. Use that for all new Python app scaffolding.
 
 For version history have a look at the [CHANGELOG](CHANGELOG.md).
 
